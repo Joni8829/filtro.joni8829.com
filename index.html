@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- WEB APP RELATED -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FILTRO">
+<link rel="apple-touch-icon" href="Logo-512.png">
+<!-- WEBSITE METADATA -->
+<meta name="theme-color" content="#111010">
+<title>FILTRO</title>
+<link rel="shortcut icon" href="camera.ico" type="image/x-icon">
+<!-- LINK FONT, JAVASCRIPT AND CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json"/>
+<link rel="stylesheet" href="./.assets/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">FIL<span class="logo-dot">T</span>RO</div>
+    <div class="header-right">
+      <div class="btn-icon" id="uploadBtn">📷</div>
+    </div>
+  </div>
+
+  <div class="image-wrap" id="imageWrap">
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-circle">＋</div>
+      <div class="drop-hint">Tap to open a photo</div>
+      <div class="drop-hint" style="font-size:9px;margin-top:-4px;color:#333">Your photos never leave your device</div>
+    </div>
+    <canvas id="previewCanvas"></canvas>
+    <div class="filter-badge" id="filterBadge">Original</div>
+    <div class="compare-overlay" id="compareOverlay">
+      <div class="compare-pill"><div class="compare-dot"></div>Original</div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="tabs">
+      <div class="tab active" data-tab="filters">Filters</div>
+      <div class="tab" data-tab="adjust">Adjust</div>
+    </div>
+
+    <!-- FILTERS PANEL -->
+    <div class="panel active" id="panel-filters">
+      <div class="filter-strip-wrap">
+        <div class="filter-strip" id="filterStrip"></div>
+      </div>
+    </div>
+
+    <!-- ADJUST PANEL -->
+    <div class="panel" id="panel-adjust">
+      <div class="adj-panel" id="adjPanel"></div>
+      <div style="padding: 0 14px 20px;">
+        <button class="btn-reset" onclick="saveCurrentPreset()" style="width: 100%; color: var(--gold); border-color: var(--gold);">SAVE CURRENT AS PRESET</button>
+      </div>
+    </div>
+
+    <div class="dl-bar">
+      <button class="btn-dl" id="downloadBtn" disabled>SAVE PHOTO</button>
+      <button class="btn-reset" id="resetBtn">RESET</button>
+    </div>
+  </div>
+
+</div>
+<input type="file" id="fileInput" accept="image/*" capture="environment">
+<script src="./.assets/script.js"></script>
+</body>
+</html>

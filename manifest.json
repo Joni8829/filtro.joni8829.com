@@ -1,0 +1,20 @@
+{
+  "name": "FILTRO",
+  "short_name": "FILTRO",
+  "icons": [
+    {
+      "src": "Logo-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "Logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#111010",
+  "background_color": "#111010"
+}
