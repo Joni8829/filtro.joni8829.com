@@ -20,7 +20,7 @@ html,
 body {
     height: 100%;
     overflow: hidden;
-    /* background: var(--bg); */
+    background: var(--bg);
     background: radial-gradient(circle at center, #252525 0%, var(--bg) 100%);
     color: var(--text);
     font-family: monospace;
