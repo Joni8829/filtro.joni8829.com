@@ -21,7 +21,6 @@ body {
     height: 100%;
     overflow: hidden;
     background: var(--bg);
-    background: radial-gradient(circle at center, #252525 0%, var(--bg) 100%);
     color: var(--text);
     font-family: monospace;
     user-select: none;
@@ -40,12 +39,15 @@ body {
     height: 100dvh;
     min-height: -webkit-fill-available;
     overflow: hidden;
+    background: radial-gradient(circle at center, #252525 0%, var(--bg) 100%);
 }
 
 /* ─── HEADER ─────────────────────────────────────────── */
 .header {
     display: flex;
     align-items: center;
+    background: transparent;
+    backdrop-filter: blur(10px);
     justify-content: space-between;
     padding: max(12px, env(safe-area-inset-top)) 16px 10px;
     border-bottom: 1px solid var(--border);
@@ -96,10 +98,12 @@ body {
     min-height: 0;
     position: relative;
     display: flex;
+    background: transparent;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: #0a0a0a;
+    /* background: #0a0a0a; */
+    background: transparent;
 }
 
 .drop-zone {
