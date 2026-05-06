@@ -350,44 +350,47 @@ const FILTERS = [
   },
 ];
 
-// ─── APPLY FUNCTION ───────────────────────────────────────────────────────────
-// Replace your entire apply() function with this much cleaner version:
+// ─── OPTIMIZED APPLY FUNCTION ────────────────────────────────────────────────
 function apply(imgData, w, h, opts = {}) {
   const {
+    exposure = 0,
     brightness = 0,
     contrast = 0,
     saturation = 0,
     warmth = 0,
     fade = 0,
-    vignette = 0,
-    grain = 0,
+    glow = 0,
   } = opts;
 
   const d = new Uint8ClampedArray(imgData.data);
+  
+  // Pre-calculate constants for performance
+  const evFactor = Math.pow(2, exposure / 100);
   const bv = (brightness / 100) * 255;
-  const cv = contrast / 100;
-  const sv = 1 + saturation / 100;
+  const cv = 1 + (contrast / 100);
+  const sv = 1 + (saturation / 100);
   const wv = warmth / 100;
   const fv = fade / 100;
+  
+  // Pre-calculate the glow amount variable
+  const glowAmt = glow / 80;
 
   for (let i = 0; i < d.length; i += 4) {
-    let r = d[i],
-      g = d[i + 1],
-      b = d[i + 2];
+    let r = d[i], g = d[i + 1], b = d[i + 2];
 
-    // Brightness
-    r += bv;
-    g += bv;
-    b += bv;
+    // 1. Exposure (Multiplier) & 2. Brightness (Offset)
+    r = r * evFactor + bv; 
+    g = g * evFactor + bv; 
+    b = b * evFactor + bv;
 
-    // Contrast
-    if (cv !== 0) {
-      r = ((r / 255 - 0.5) * (1 + cv) + 0.5) * 255;
-      g = ((g / 255 - 0.5) * (1 + cv) + 0.5) * 255;
-      b = ((b / 255 - 0.5) * (1 + cv) + 0.5) * 255;
+    // 3. Contrast
+    if (contrast !== 0) {
+      r = ((r / 255 - 0.5) * cv + 0.5) * 255;
+      g = ((g / 255 - 0.5) * cv + 0.5) * 255;
+      b = ((b / 255 - 0.5) * cv + 0.5) * 255;
     }
 
-    // Saturation
+    // 4. Saturation
     if (sv !== 1) {
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       r = lum + (r - lum) * sv;
@@ -395,28 +398,68 @@ function apply(imgData, w, h, opts = {}) {
       b = lum + (b - lum) * sv;
     }
 
-    // Warmth
-    if (wv > 0) {
-      r += wv * 60;
-      b -= wv * 40;
-    } else if (wv < 0) {
-      b -= wv * 60;
-      r += wv * 40;
+    // 5. Dreamy Glow (Using glowAmt)
+    if (glow > 0) {
+      const threshold = 130; 
+      
+      // A. The Bleed: Highlights smoothly transition toward white
+      if (r > threshold) r += (255 - r) * glowAmt * 0.5;
+      if (g > threshold) g += (255 - g) * glowAmt * 0.5;
+      if (b > threshold) b += (255 - b) * glowAmt * 0.5;
+      
+      // B. The Haze: Soft shadow lift for that misty look
+      const lift = glowAmt * 10; 
+      r += lift; g += lift; b += lift;
     }
 
-    // Fade
+    // 6. Warmth
+    if (wv !== 0) {
+      r += wv * (wv > 0 ? 50 : 30);
+      b -= wv * (wv > 0 ? 30 : 50);
+    }
+
+    // 7. Fade
     if (fv > 0) {
       r = r + (128 - r) * fv * 0.7;
       g = g + (128 - g) * fv * 0.5;
       b = b + (128 - b) * fv * 0.6;
     }
 
+    // Clamp and update array
     d[i] = Math.max(0, Math.min(255, r));
     d[i + 1] = Math.max(0, Math.min(255, g));
     d[i + 2] = Math.max(0, Math.min(255, b));
   }
   return d;
 }
+
+// ─── UPDATED RESET LOGIC ─────────────────────────────────────────────────────
+document.getElementById("resetBtn").addEventListener("click", () => {
+  // Use Object.keys to ensure EVERY adjustment is zeroed out automatically
+  Object.keys(manualAdj).forEach(key => manualAdj[key] = 0);
+
+  ADJ_DEFS.forEach(({ key }) => {
+    const sl = document.getElementById(`adj-${key}`);
+    if (sl) {
+      sl.value = 0;
+      document.getElementById(`adjval-${key}`).textContent = "0";
+    }
+  });
+
+  // CRITICAL: Clear the CSS blur effect
+  canvas.style.filter = "none";
+
+  activeFilterId = "original";
+  document
+    .querySelectorAll(".f-item")
+    .forEach((i) => i.classList.remove("active"));
+  document
+    .querySelector('.f-item[data-id="original"]')
+    ?.classList.add("active");
+    
+  render();
+  showBadge("Original");
+});
 
 // ─── SAVE CUSTOM FILTERS ──────────────────────────────────────────────────────
 // Creates a filter object from a set of adjustment values
@@ -477,6 +520,9 @@ let activeFilterId = "original";
 let manualAdj = {
   brightness: 0,
   contrast: 0,
+  exposure: 0,
+  glow: 0,
+  blur: 0,
   saturation: 0,
   warmth: 0,
   fade: 0,
@@ -512,6 +558,10 @@ function render() {
   }
 
   ctx.putImageData(imgData, 0, 0);
+
+  // Apply Blur via CSS for performance
+  const blurVal = manualAdj.blur || 0;
+  canvas.style.filter = blurVal > 0 ? `blur(${blurVal}px)` : 'none';
 
   // Grain overlay
   const totalGrain =
@@ -694,9 +744,12 @@ function buildFilterStrip() {
 
 // ─── BUILD ADJUSTMENTS ────────────────────────────────────────────────────────
 const ADJ_DEFS = [
+  { key: "exposure", label: "Exposure", min: -100, max: 100 },
   { key: "brightness", label: "Light", min: -100, max: 100 },
   { key: "contrast", label: "Contrast", min: -100, max: 100 },
   { key: "saturation", label: "Color", min: -100, max: 100 },
+  { key: "glow", label: "Dreamy Glow", min: 0, max: 100 },
+  { key: "blur", label: "Focus Blur", min: 0, max: 10 },
   { key: "warmth", label: "Warmth", min: -100, max: 100 },
   { key: "fade", label: "Fade", min: 0, max: 100 },
   { key: "vignette", label: "Vignette", min: 0, max: 100 },
@@ -813,35 +866,6 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   link.click();
 });
 
-// Reset
-document.getElementById("resetBtn").addEventListener("click", () => {
-  manualAdj = {
-    brightness: 0,
-    contrast: 0,
-    saturation: 0,
-    warmth: 0,
-    fade: 0,
-    vignette: 0,
-    grain: 0,
-  };
-  ADJ_DEFS.forEach(({ key }) => {
-    const sl = document.getElementById(`adj-${key}`);
-    if (sl) {
-      sl.value = 0;
-      document.getElementById(`adjval-${key}`).textContent = "0";
-    }
-  });
-  activeFilterId = "original";
-  document
-    .querySelectorAll(".f-item")
-    .forEach((i) => i.classList.remove("active"));
-  document
-    .querySelector('.f-item[data-id="original"]')
-    ?.classList.add("active");
-  render();
-  showBadge("Original");
-});
-
 // ─── HOLD TO COMPARE ─────────────────────────────────────────────────────────
 let holdPrevFilter = null;
 let isHolding = false;
@@ -895,21 +919,49 @@ function loadSavedPresets() {
   }
 }
 
+// ─── IMPORT / EXPORT ──────────────────────────────────
+function exportPresets() {
+  const data = localStorage.getItem("filtro_user_presets") || "[]";
+  const blob = new Blob([data], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `filtro_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importPresets(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      
+      // Get existing presets to merge them
+      const existing = JSON.parse(localStorage.getItem("filtro_user_presets") || "[]");
+      
+      // Merge and remove duplicates by ID
+      const merged = [...existing, ...imported];
+      const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
+
+      localStorage.setItem("filtro_user_presets", JSON.stringify(unique));
+      
+      // Refresh UI
+      showBadge("Presets Imported!");
+      setTimeout(() => location.reload(), 1000); 
+    } catch (err) { 
+      alert("Error: This file doesn't look like a valid FILTRO backup."); 
+    }
+  };
+  reader.readAsText(file);
+}
+
 function initApp() {
-  // 1. Load data from storage first
-  loadSavedPresets();
-
-  // 2. Build the UI components
-  buildFilterStrip();
-  buildAdjPanel();
-
-  // 3. Handle Service Worker (Optional cleanup)
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(() => {});
-    });
-  }
+    loadSavedPresets();
+    buildFilterStrip();
+    buildAdjPanel();
 }
 
 // Run the app
-initApp();
+initApp()

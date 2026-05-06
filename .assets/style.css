@@ -176,6 +176,48 @@ body {
     opacity: 1;
 }
 
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+/* Container to align buttons and github icon */
+.header-right {
+    display: flex;
+    gap: 8px;
+    align-items: center; /* Vertical alignment for text and icons */
+}
+
+.preset-management {
+    display: flex;
+    gap: 6px;
+    margin-right: 4px; /* Space between presets and icons */
+}
+
+.btn-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-header:active {
+    transform: scale(0.95);
+    background: var(--bg);
+}
 /* hold-to-compare overlay */
 .compare-overlay {
     position: absolute;

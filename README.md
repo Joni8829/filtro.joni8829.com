@@ -6,10 +6,9 @@ Filtro is a **simple** & **private** photo editor made with ❤️ by Joni8829
     * Light & Contrast
     * Color & Warmth
     * Color Fade, Vignette, and Grain
+    * Dreamy Glow, Blur, Exposure, Contrast
 * **Preset Library:** Filtro has a collection of 10+ filters that will give your photos that extra pop!
 * **Privacy-First:** Your photos stay on your device - They are not uploaded to a server.
-
-**🚀 Coming Soon**
 * **Import/Export:** Share your custom filters with friends or back them up
 
 ### 🛠️ Getting Started

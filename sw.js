@@ -1,4 +1,4 @@
-const CACHE_NAME = "filtro-v4"; // Bump to v3 because we changed the file list
+const CACHE_NAME = "filtro-v5"; // Bump to new version because we changed the file list
 const ASSETS = [
   "/",
   "/index.html",
